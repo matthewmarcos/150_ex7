@@ -4,6 +4,7 @@ simplex <- function(tableau) {
 # Last column is the solution
 # All nonzero numbers on the last row before Z are the number of unknowns
 
+    print(tableau)
     constraintsCount <- (nrow(tableau) - 1)
     unknownsCount <- 0
     bottomRow <- tableau[(nrow(tableau)), ]
@@ -20,29 +21,41 @@ simplex <- function(tableau) {
 
     answers <- rep(0, unknownsCount)
 
-    print("Tableau:")
-    print(tableau)
-    print(paste("constraintsCount: ", constraintsCount))
-    print(paste("unknownsCount: ", unknownsCount))
-    print("answers:")
-    print(answers)
-    print(bottomHasNegative)
-
-    # Eliminate all negative numbers in the
+    # Eliminate all negative numbers in the bottom
     while(bottomHasNegative) {
         # Find the index of the minimum negative number in the bottom row
         pivot_col_number <- find_min_index(bottomRow)
+        print("pivot_col_number")
+        print(pivot_col_number)
 
         # Get array of the ratio (solution/tableau[, i])
         # Do not include the last element
-        ratio <- head(tableau[, ncol(tableau)] / tableau[, pivot_col_number], -1)
+        ratio <- head((tableau[, ncol(tableau)] / tableau[, pivot_col_number]), -1)
         pivot_row_number <- find_min_index(ratio)
+        pivot_row <- tableau[pivot_row_number,]
+        pivot_element <- tableau[pivot_row_number, pivot_col_number]
 
-        print(ratio)
-        print(pivot_row_number)
+        print("pivot_row")
+        print(pivot_row)
+        # Normalize the pivot row
+        tableau[pivot_row_number,] <- pivot_row / pivot_element
 
-        break
+        # clear pivot_col_number
+        tableau <- t(apply(tableau, 1, function(v) {
+            multiplier <- v[pivot_col_number]
+            # print(tableau)
+            if(all(v == pivot_row)) {
+                return(v)
+            }
+
+            return(v - (pivot_row * multiplier))
+        }))
+
+        print(tableau)
+
+        bottomRow <- tableau[(nrow(tableau)), ]
         bottomHasNegative <- (find_min(bottomRow) < 0)
+        break
     }
 }
 
